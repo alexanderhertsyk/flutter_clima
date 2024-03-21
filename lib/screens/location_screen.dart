@@ -1,14 +1,34 @@
+import 'package:clima/services/weather.dart';
 import 'package:flutter/material.dart';
 import 'package:clima/utilities/constants.dart';
 
 class LocationScreen extends StatefulWidget {
-  const LocationScreen({super.key});
+  const LocationScreen({super.key, this.weather});
+
+  final dynamic weather;
 
   @override
   State<LocationScreen> createState() => _LocationScreenState();
 }
 
 class _LocationScreenState extends State<LocationScreen> {
+  double temperature = 0;
+  int condition = 0;
+  String cityName = '';
+
+  @override
+  void initState() {
+    super.initState();
+
+    updateUI(widget.weather);
+  }
+
+  void updateUI(dynamic weather) {
+    temperature = weather['main']?['temp'] ?? 0;
+    condition = weather['weather']?[0]?['id'] ?? 0;
+    cityName = weather['name'] ?? '';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,25 +66,25 @@ class _LocationScreenState extends State<LocationScreen> {
                   ),
                 ],
               ),
-              const Padding(
-                padding: EdgeInsets.only(left: 15.0),
+              Padding(
+                padding: const EdgeInsets.only(left: 15.0),
                 child: Row(
                   children: <Widget>[
                     Text(
-                      '32°',
+                      '${temperature.toStringAsFixed(1)}°',
                       style: kTempTextStyle,
                     ),
                     Text(
-                      '☀️',
+                      WeatherHelper.conditionToIcon(condition),
                       style: kConditionTextStyle,
                     ),
                   ],
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.only(right: 15.0),
+              Padding(
+                padding: const EdgeInsets.only(right: 15.0),
                 child: Text(
-                  "It's 🍦 time in San Francisco!",
+                  '${WeatherHelper.tempToInfo(temperature)} at $cityName!',
                   textAlign: TextAlign.right,
                   style: kMessageTextStyle,
                 ),

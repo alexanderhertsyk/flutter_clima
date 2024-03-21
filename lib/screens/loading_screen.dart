@@ -25,8 +25,6 @@ class _LoadingScreenState extends State<LoadingScreen> {
   Future updateWeather() async {
     var weather = await _weatherService.refreshCurrentWeather();
 
-    if (weather == null) return;
-
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => LocationScreen(weather)));
   }

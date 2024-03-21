@@ -5,9 +5,13 @@ import 'package:clima/utilities/weather_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:clima/utilities/constants.dart';
 
+const kWeatherErrorTemperature = '-.-';
+const kWeatherErrorCondition = '🤷‍';
+const kWeatherErrorSuggestion = 'Unable to get weather data';
+
 class LocationScreen extends StatefulWidget {
   const LocationScreen(this.weather, {super.key});
-  final WeatherModel weather;
+  final WeatherModel? weather;
 
   @override
   State<LocationScreen> createState() => _LocationScreenState();
@@ -16,22 +20,32 @@ class LocationScreen extends StatefulWidget {
 class _LocationScreenState extends State<LocationScreen> {
   final IWeatherService _weatherService =
       ServiceDispatcher.instance.getService<IWeatherService>();
-  late WeatherModel _weather;
+  String _temperature = '', _condition = '', _suggestion = '';
 
   @override
   void initState() {
     super.initState();
 
-    _weather = widget.weather;
+    _setWeather(widget.weather);
   }
 
-  Future refreshCurrentWeather() async {
+  Future _refreshCurrentWeather() async {
     var weather = await _weatherService.refreshCurrentWeather();
-
-    if (weather == null) return;
-
-    setState(() => _weather = weather);
+    _setWeather(weather);
   }
+
+  void _setWeather(WeatherModel? weather) => setState(() {
+        if (weather != null) {
+          _temperature = weather.temperature.toStringAsFixed(1);
+          _condition = WeatherHelper.getConditionIcon(weather.condition);
+          _suggestion = WeatherHelper.getSuggestion(
+              weather.temperature, weather.cityName);
+        } else {
+          _temperature = kWeatherErrorTemperature;
+          _condition = kWeatherErrorCondition;
+          _suggestion = kWeatherErrorSuggestion;
+        }
+      });
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +69,7 @@ class _LocationScreenState extends State<LocationScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   IconButton(
-                    onPressed: () async => await refreshCurrentWeather(),
+                    onPressed: () => _refreshCurrentWeather(),
                     icon: const Icon(
                       Icons.near_me,
                       size: 50.0,
@@ -75,11 +89,11 @@ class _LocationScreenState extends State<LocationScreen> {
                 child: Row(
                   children: <Widget>[
                     Text(
-                      '${_weather.temperature.toStringAsFixed(1)}°',
+                      '$_temperature°',
                       style: kTempTextStyle,
                     ),
                     Text(
-                      WeatherHelper.getConditionIcon(_weather.condition),
+                      _condition,
                       style: kConditionTextStyle,
                     ),
                   ],
@@ -88,7 +102,7 @@ class _LocationScreenState extends State<LocationScreen> {
               Padding(
                 padding: const EdgeInsets.only(right: 15.0),
                 child: Text(
-                  '${WeatherHelper.getSuggestion(_weather.temperature)} in ${_weather.cityName}',
+                  _suggestion,
                   textAlign: TextAlign.right,
                   style: kMessageTextStyle,
                 ),

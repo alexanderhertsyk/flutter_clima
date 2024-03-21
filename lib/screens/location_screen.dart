@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:clima/utilities/constants.dart';
 
 class LocationScreen extends StatefulWidget {
-  LocationScreen(this.weather, {super.key});
-  WeatherModel weather;
+  const LocationScreen(this.weather, {super.key});
+  final WeatherModel weather;
 
   @override
   State<LocationScreen> createState() => _LocationScreenState();
@@ -16,21 +16,21 @@ class LocationScreen extends StatefulWidget {
 class _LocationScreenState extends State<LocationScreen> {
   final IWeatherService _weatherService =
       ServiceDispatcher.instance.getService<IWeatherService>();
-  double _temp = 0;
-  int _condition = 0;
-  String _cityName = '';
+  late WeatherModel _weather;
 
   @override
   void initState() {
     super.initState();
 
-    updateUI();
+    _weather = widget.weather;
   }
 
-  void updateUI() {
-    _temp = widget.weather.temperature;
-    _condition = widget.weather.condition;
-    _cityName = widget.weather.cityName;
+  Future refreshCurrentWeather() async {
+    var weather = await _weatherService.refreshCurrentWeather();
+
+    if (weather == null) return;
+
+    setState(() => _weather = weather);
   }
 
   @override
@@ -55,7 +55,7 @@ class _LocationScreenState extends State<LocationScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () async => await refreshCurrentWeather(),
                     icon: const Icon(
                       Icons.near_me,
                       size: 50.0,
@@ -75,11 +75,11 @@ class _LocationScreenState extends State<LocationScreen> {
                 child: Row(
                   children: <Widget>[
                     Text(
-                      '${_temp.toStringAsFixed(1)}°',
+                      '${_weather.temperature.toStringAsFixed(1)}°',
                       style: kTempTextStyle,
                     ),
                     Text(
-                      WeatherHelper.getConditionIcon(_condition),
+                      WeatherHelper.getConditionIcon(_weather.condition),
                       style: kConditionTextStyle,
                     ),
                   ],
@@ -88,7 +88,7 @@ class _LocationScreenState extends State<LocationScreen> {
               Padding(
                 padding: const EdgeInsets.only(right: 15.0),
                 child: Text(
-                  '${WeatherHelper.getSuggestion(_temp)} in $_cityName!',
+                  '${WeatherHelper.getSuggestion(_weather.temperature)} in ${_weather.cityName}',
                   textAlign: TextAlign.right,
                   style: kMessageTextStyle,
                 ),

@@ -1,5 +1,4 @@
 import 'package:clima/screens/location_screen.dart';
-import 'package:clima/services/location.dart';
 import 'package:clima/services/weather.dart';
 import 'package:clima/utilities/service_dispatcher.dart';
 import 'package:flutter/material.dart';
@@ -13,8 +12,6 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
-  final _locationService =
-      ServiceDispatcher.instance.getService<ILocationService>();
   final _weatherService =
       ServiceDispatcher.instance.getService<IWeatherService>();
 
@@ -26,17 +23,12 @@ class _LoadingScreenState extends State<LoadingScreen> {
   }
 
   Future updateWeather() async {
-    var position = await _locationService.getCurrentPosition();
-
-    if (position == null) return;
-
-    var weather = await _weatherService.refreshWeather(
-        position.latitude, position.longitude);
+    var weather = await _weatherService.refreshCurrentWeather();
 
     if (weather == null) return;
 
     Navigator.push(context,
-        MaterialPageRoute(builder: (context) => LocationScreen(weather!)));
+        MaterialPageRoute(builder: (context) => LocationScreen(weather)));
   }
 
   @override

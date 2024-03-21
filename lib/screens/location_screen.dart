@@ -1,32 +1,36 @@
+import 'package:clima/models/weather.dart';
 import 'package:clima/services/weather.dart';
+import 'package:clima/utilities/service_dispatcher.dart';
+import 'package:clima/utilities/weather_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:clima/utilities/constants.dart';
 
 class LocationScreen extends StatefulWidget {
-  const LocationScreen({super.key, this.weather});
-
-  final dynamic weather;
+  LocationScreen(this.weather, {super.key});
+  WeatherModel weather;
 
   @override
   State<LocationScreen> createState() => _LocationScreenState();
 }
 
 class _LocationScreenState extends State<LocationScreen> {
-  double temperature = 0;
-  int condition = 0;
-  String cityName = '';
+  final IWeatherService _weatherService =
+      ServiceDispatcher.instance.getService<IWeatherService>();
+  double _temp = 0;
+  int _condition = 0;
+  String _cityName = '';
 
   @override
   void initState() {
     super.initState();
 
-    updateUI(widget.weather);
+    updateUI();
   }
 
-  void updateUI(dynamic weather) {
-    temperature = weather['main']?['temp'] ?? 0;
-    condition = weather['weather']?[0]?['id'] ?? 0;
-    cityName = weather['name'] ?? '';
+  void updateUI() {
+    _temp = widget.weather.temperature;
+    _condition = widget.weather.condition;
+    _cityName = widget.weather.cityName;
   }
 
   @override
@@ -71,11 +75,11 @@ class _LocationScreenState extends State<LocationScreen> {
                 child: Row(
                   children: <Widget>[
                     Text(
-                      '${temperature.toStringAsFixed(1)}°',
+                      '${_temp.toStringAsFixed(1)}°',
                       style: kTempTextStyle,
                     ),
                     Text(
-                      WeatherHelper.conditionToIcon(condition),
+                      WeatherHelper.getConditionIcon(_condition),
                       style: kConditionTextStyle,
                     ),
                   ],
@@ -84,7 +88,7 @@ class _LocationScreenState extends State<LocationScreen> {
               Padding(
                 padding: const EdgeInsets.only(right: 15.0),
                 child: Text(
-                  '${WeatherHelper.tempToInfo(temperature)} at $cityName!',
+                  '${WeatherHelper.getSuggestion(_temp)} in $_cityName!',
                   textAlign: TextAlign.right,
                   style: kMessageTextStyle,
                 ),

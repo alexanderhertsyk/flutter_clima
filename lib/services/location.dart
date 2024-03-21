@@ -1,6 +1,12 @@
+import 'package:clima/utilities/service_dispatcher.dart';
 import 'package:geolocator/geolocator.dart';
 
-class Location {
+abstract class ILocationService implements IService {
+  Future<Position?> getCurrentPosition();
+}
+
+class LocationService implements ILocationService {
+  @override
   Future<Position?> getCurrentPosition() async {
     try {
       var position = await Geolocator.getCurrentPosition(

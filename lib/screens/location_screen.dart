@@ -35,6 +35,18 @@ class _LocationScreenState extends State<LocationScreen> {
     _setWeather(weather);
   }
 
+  Future _refreshCityWeather(String city) async {
+    var weather = await _weatherService.getCityWeather(city);
+    _setWeather(weather);
+  }
+
+  Future _openCityPage(BuildContext context) async {
+    var city = await Navigator.push(
+        context, MaterialPageRoute(builder: (context) => const CityScreen()));
+
+    if (city != null) _refreshCityWeather(city);
+  }
+
   void _setWeather(WeatherModel weather) => setState(() {
         if (weather.hasError) {
           _temperature = kWeatherErrorTemperature;
@@ -47,16 +59,6 @@ class _LocationScreenState extends State<LocationScreen> {
               weather.temperature, weather.cityName);
         }
       });
-
-  Future _openCityPage(BuildContext context) async {
-    var city = await Navigator.push(
-        context, MaterialPageRoute(builder: (context) => const CityScreen()));
-
-    if (city != null) {
-      var weather = await _weatherService.getCityWeather(city);
-      _setWeather(weather);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

@@ -1,4 +1,4 @@
-import 'package:clima/models/weather.dart';
+import 'package:clima/models/weather_model.dart';
 import 'package:clima/screens/city_screen.dart';
 import 'package:clima/services/weather_service.dart';
 import 'package:clima/utilities/service_dispatcher.dart';
@@ -12,7 +12,7 @@ const kWeatherErrorSuggestion = 'Unable to get weather data';
 
 class LocationScreen extends StatefulWidget {
   const LocationScreen(this.weather, {super.key});
-  final WeatherModel? weather;
+  final WeatherModel weather;
 
   @override
   State<LocationScreen> createState() => _LocationScreenState();
@@ -35,16 +35,16 @@ class _LocationScreenState extends State<LocationScreen> {
     _setWeather(weather);
   }
 
-  void _setWeather(WeatherModel? weather) => setState(() {
-        if (weather != null) {
+  void _setWeather(WeatherModel weather) => setState(() {
+        if (weather.hasError) {
+          _temperature = kWeatherErrorTemperature;
+          _condition = kWeatherErrorCondition;
+          _suggestion = weather.errorMessage ?? kWeatherErrorSuggestion;
+        } else {
           _temperature = weather.temperature.toStringAsFixed(1);
           _condition = WeatherHelper.getConditionIcon(weather.condition);
           _suggestion = WeatherHelper.getSuggestion(
               weather.temperature, weather.cityName);
-        } else {
-          _temperature = kWeatherErrorTemperature;
-          _condition = kWeatherErrorCondition;
-          _suggestion = kWeatherErrorSuggestion;
         }
       });
 

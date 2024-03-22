@@ -1,4 +1,5 @@
-import 'package:clima/models/weather.dart';
+import 'package:clima/models/api_model.dart';
+import 'package:clima/models/weather_model.dart';
 import 'package:clima/services/location_service.dart';
 import 'package:clima/utilities/service_dispatcher.dart';
 
@@ -7,14 +8,17 @@ import 'network_service.dart';
 const baseUrl = 'https://api.openweathermap.org/data/2.5/weather';
 const apiKey = 'dcd7b41735b97e94c3c463922348ed1d';
 const unknownCondition = 1000;
+const unexpectedError = 'Unexpected error!';
 
 abstract class IWeatherService implements IService {
-  Future<WeatherModel?> getCurrentWeather() => Future(() => null);
+  Future<WeatherModel> getCurrentWeather() =>
+      throw UnimplementedError('This is an interface!');
 
-  Future<WeatherModel?> getCityWeather(String city) => Future(() => null);
+  Future<WeatherModel> getCityWeather(String city) =>
+      throw UnimplementedError('This is an interface!');
 
-  Future<WeatherModel?> getPositionWeather(double latitude, double longitude) =>
-      Future(() => null);
+  Future<WeatherModel> getPositionWeather(double latitude, double longitude) =>
+      throw UnimplementedError('This is an interface!');
 }
 
 class WeatherService implements IWeatherService {
@@ -24,10 +28,10 @@ class WeatherService implements IWeatherService {
       ServiceDispatcher.instance.getService<INetworkService>();
 
   @override
-  Future<WeatherModel?> getCurrentWeather() async {
+  Future<WeatherModel> getCurrentWeather() async {
     var position = await _locationService.getCurrentPosition();
 
-    if (position == null) return null;
+    if (position == null) return WeatherModel.error("Can't locate device");
 
     var weather =
         await getPositionWeather(position.latitude, position.longitude);
@@ -36,7 +40,7 @@ class WeatherService implements IWeatherService {
   }
 
   @override
-  Future<WeatherModel?> getCityWeather(String city) async {
+  Future<WeatherModel> getCityWeather(String city) async {
     var parameters = {'q': city};
     var weatherData = await _getWeatherData(parameters);
 
@@ -44,7 +48,7 @@ class WeatherService implements IWeatherService {
   }
 
   @override
-  Future<WeatherModel?> getPositionWeather(
+  Future<WeatherModel> getPositionWeather(
       double latitude, double longitude) async {
     var parameters = {'lat': latitude, 'lon': longitude};
     var weatherData = await _getWeatherData(parameters);
@@ -58,20 +62,35 @@ class WeatherService implements IWeatherService {
     var url = '$baseUrl?appid=$apiKey$parametersString&units=metric';
     var uri = Uri.parse(url);
 
-    return await _networkService.getData(uri);
+    var result = await _networkService.getData<dynamic>(uri);
+
+    return result;
   }
 
-  WeatherModel? _parseWeatherData(dynamic weatherData) {
-    if (weatherData['cod'] != 200) return null;
+  WeatherModel _parseWeatherData(ApiModel<dynamic> weatherData) {
+    if (!weatherData.succeed) {
+      var errorMessage = weatherData.errorMessage;
+      int? code = int.tryParse(weatherData.response?['cod'] ?? '');
 
-    int? condition = weatherData['weather']?[0]?['id'];
-    double? temperature = weatherData['main']?['temp'];
-    String? cityName = weatherData['name'];
+      if (code != null && code != 200) {
+        errorMessage = weatherData.response?['message'];
+      }
 
-    if (condition == null || temperature == null || cityName == null) {
-      return null;
+      return WeatherModel.error(errorMessage ?? unexpectedError);
     }
 
-    return WeatherModel(condition, temperature, cityName);
+    int? condition = weatherData.response?['weather']?[0]?['id'];
+    double? temperature = weatherData.response?['main']?['temp'];
+    String? cityName = weatherData.response?['name'];
+
+    if (condition == null || temperature == null || cityName == null) {
+      return WeatherModel.error(unexpectedError);
+    }
+
+    return WeatherModel(
+      condition: condition,
+      temperature: temperature,
+      cityName: cityName,
+    );
   }
 }

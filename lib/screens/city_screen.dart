@@ -9,6 +9,12 @@ class CityScreen extends StatefulWidget {
 }
 
 class _CityScreenState extends State<CityScreen> {
+  String? _city;
+
+  void _backToLocationPage(BuildContext context, bool useCity) {
+    Navigator.pop(context, useCity ? _city : null);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,7 +32,7 @@ class _CityScreenState extends State<CityScreen> {
               Align(
                 alignment: Alignment.topLeft,
                 child: IconButton(
-                  onPressed: () {},
+                  onPressed: () => _backToLocationPage(context, false),
                   icon: const Icon(
                     Icons.arrow_back_ios,
                     size: 50.0,
@@ -35,10 +41,14 @@ class _CityScreenState extends State<CityScreen> {
               ),
               Container(
                 padding: const EdgeInsets.all(20.0),
-                child: null,
+                child: TextField(
+                  style: const TextStyle(color: Colors.black),
+                  decoration: kTextFieldCityDecoration,
+                  onChanged: (value) => _city = value,
+                ),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () => _backToLocationPage(context, true),
                 child: const Text(
                   'Get Weather',
                   style: kButtonTextStyle,

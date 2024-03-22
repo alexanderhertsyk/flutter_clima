@@ -1,6 +1,6 @@
-import 'package:clima/services/location.dart';
-import 'package:clima/services/networking.dart';
-import 'package:clima/services/weather.dart';
+import 'package:clima/services/location_service.dart';
+import 'package:clima/services/network_service.dart';
+import 'package:clima/services/weather_service.dart';
 
 abstract class IService {}
 

@@ -1,5 +1,5 @@
 import 'package:clima/screens/location_screen.dart';
-import 'package:clima/services/weather.dart';
+import 'package:clima/services/weather_service.dart';
 import 'package:clima/utilities/service_dispatcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -23,8 +23,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
   }
 
   Future updateWeather() async {
-    var weather = await _weatherService.refreshCurrentWeather();
-
+    var weather = await _weatherService.getCurrentWeather();
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => LocationScreen(weather)));
   }

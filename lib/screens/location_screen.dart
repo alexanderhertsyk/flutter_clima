@@ -1,5 +1,6 @@
 import 'package:clima/models/weather.dart';
-import 'package:clima/services/weather.dart';
+import 'package:clima/screens/city_screen.dart';
+import 'package:clima/services/weather_service.dart';
 import 'package:clima/utilities/service_dispatcher.dart';
 import 'package:clima/utilities/weather_helper.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +31,7 @@ class _LocationScreenState extends State<LocationScreen> {
   }
 
   Future _refreshCurrentWeather() async {
-    var weather = await _weatherService.refreshCurrentWeather();
+    var weather = await _weatherService.getCurrentWeather();
     _setWeather(weather);
   }
 
@@ -46,6 +47,16 @@ class _LocationScreenState extends State<LocationScreen> {
           _suggestion = kWeatherErrorSuggestion;
         }
       });
+
+  Future _openCityPage(BuildContext context) async {
+    var city = await Navigator.push(
+        context, MaterialPageRoute(builder: (context) => const CityScreen()));
+
+    if (city != null) {
+      var weather = await _weatherService.getCityWeather(city);
+      _setWeather(weather);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +87,7 @@ class _LocationScreenState extends State<LocationScreen> {
                     ),
                   ),
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () => _openCityPage(context),
                     icon: const Icon(
                       Icons.location_city,
                       size: 50.0,
